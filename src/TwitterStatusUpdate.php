@@ -13,6 +13,7 @@ class TwitterStatusUpdate extends TwitterMessage
     public ?Collection $videoIds = null;
 
     private ?array $images = null;
+    private ?array $taggedUserIds = null;
 
     private ?array $videos = null;
 
@@ -68,6 +69,20 @@ class TwitterStatusUpdate extends TwitterMessage
     }
 
     /**
+     * Tag a user in the attached media with the user id.
+     *
+     * @return $this
+     */
+    public function withTaggedUserId(array|string $taggedUserId): static
+    {
+        collect(is_array($taggedUserId) ? $taggedUserId : [$taggedUserId])->each(function ($taggedUserId) {
+            $this->taggedUserIds[] = $taggedUserId;
+        });
+
+        return $this;
+    }
+
+    /**
      * Get Twitter images list.
      */
     public function getImages(): ?array
@@ -114,6 +129,7 @@ class TwitterStatusUpdate extends TwitterMessage
         if ($mediaIds->count() > 0) {
             $body['media'] = [
                 'media_ids' => $mediaIds->toArray(),
+                'tagged_user_ids' => $this->taggedUserIds,
             ];
         }
 
