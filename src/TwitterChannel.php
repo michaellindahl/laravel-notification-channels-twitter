@@ -26,13 +26,15 @@ class TwitterChannel
         $twitterMessage = $notification->toTwitter($notifiable);
         $twitterMessage = $this->addImagesIfGiven($twitterMessage);
 
+        $this->twitter->setApiVersion('2');
+
         $twitterApiResponse = $this->twitter->post(
             $twitterMessage->getApiEndpoint(),
             $twitterMessage->getRequestBody(),
-            $twitterMessage->isJsonRequest,
+            true
         );
 
-        if ($this->twitter->getLastHttpCode() !== 200) {
+        if ($this->twitter->getLastHttpCode() !== 201) {
             throw CouldNotSendNotification::serviceRespondsNotSuccessful($this->twitter->getLastBody());
         }
 

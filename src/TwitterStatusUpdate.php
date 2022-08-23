@@ -10,6 +10,7 @@ class TwitterStatusUpdate extends TwitterMessage
 {
     public ?Collection $imageIds = null;
     private ?array $images = null;
+    private ?array $taggedUserIds = null;
 
     /**
      * @throws CouldNotSendNotification
@@ -25,7 +26,7 @@ class TwitterStatusUpdate extends TwitterMessage
 
     public function getApiEndpoint(): string
     {
-        return 'statuses/update';
+        return 'tweets';
     }
 
     /**
@@ -45,6 +46,20 @@ class TwitterStatusUpdate extends TwitterMessage
     }
 
     /**
+     * Tag a user in the attached media with the user id.
+     *
+     * @return $this
+     */
+    public function withTaggedUserId(array|string $taggedUserId): static
+    {
+        collect(is_array($taggedUserId) ? $taggedUserId : [$taggedUserId])->each(function ($taggedUserId) {
+            $this->taggedUserIds[] = $taggedUserId;
+        });
+
+        return $this;
+    }
+
+    /**
      * Get Twitter images list.
      */
     public function getImages(): ?array
@@ -57,10 +72,13 @@ class TwitterStatusUpdate extends TwitterMessage
      */
     public function getRequestBody(): array
     {
-        $body = ['status' => $this->getContent()];
+        $body = ['text' => $this->getContent()];
 
         if ($this->imageIds instanceof Collection) {
-            $body['media_ids'] = $this->imageIds->implode(',');
+            $body['media'] = [
+                'media_ids' => $this->imageIds,
+                'tagged_user_ids' => $this->taggedUserIds
+            ];
         }
 
         return $body;
